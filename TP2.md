@@ -1,4 +1,6 @@
-# Requirements
+# Creation d'un token de payment ERC20
+
+## Requirements
 
 Install ASDF
 
@@ -17,7 +19,7 @@ rehash
 npm install -g truffle yarn
 ```
 
-# Project setup
+## Project setup
 
 ```bash
 npx create-next-app --typescript payment-dapp
@@ -29,7 +31,7 @@ yarn add @openzeppelin/contracts @truffle/hdwallet-provider web3 dotenv tailwind
 The command `npx create-next-app` will create a basic Next.js project with typescript support, and `truffle init` will scaffold a Truffle project.
 The code libraries `@openzeppelin/contracts`, `@truffle/hdwallet-provider`, and `web3` will be used to create, deploy and integrate our smart contract. `dotenv` is for dealing with environment variables, and `tailwindcss` is used for UI styling.
 
-# Creating a smart contract
+## Creating a smart contract
 
 Create a new file called `PaymentToken.sol` in the `contracts` directory and add the following code:
 
