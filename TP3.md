@@ -100,3 +100,58 @@ constructor()
     fee = 0.0001 * 10 ** 18; // 0.0001 LINK
 }
 ```
+
+This will get a random number from the chainlink oracle. `requestRandomness()` comes from the `VRFConsumerBase` contract that we imported at the top of our smart contract.
+
+```solidity
+function getRandomNumber() public returns (bytes32 requestId) {
+    require(LINK.balanceOf(address(this)) > fee, "Not enough LINK - fill contract with faucet");
+    return requestRandomness(keyHash, fee);
+}
+```
+
+This is a callback function used by the VRF Coordinator to determine if the number is actually random.
+
+```solidity
+function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
+    randomResult = randomness;
+}
+```
+
+## Deploy the contract with Remix
+
+In Remix, click on the Solidity Compiler icon on the sidebar:
+
+Select `0.6.6+commit.6c089d02` as the compiler and click the "Compile RandomNumber.sol" button to compile the contract. Once compiled, it is ready to be deployed onto the Mumbai testnet.
+Click the Solidity Compiler icon on the sidebar again:
+
+Select "Injected Web3" as the environment in the dropdown. It will connect to your Metamask and find the network ID and account address. 80001 is the network ID for the Mumbai testnet.
+
+Now, select `RandomNumberConsumer - RandomNumber.sol` as the contract in the dropdown and click the Deploy button.
+
+Metamask should popup, allowing you to click the Confirm button to complete the transaction. This should deploy the contract to the Mumbai testnet.
+
+## Fund the contract with LINK
+
+You will need to fund your contract with LINK tokens to pay the Chainlink oracle for VRF to work. Click on the Copy Icon to copy your contract address.
+
+Go to your Metamask:
+
+1. Click on the LINK token
+2. Click the Send button
+3. Paste your contract address into the search bar
+4. Set Amount to 1 LINK
+5. Click on the Next button
+6. Click the Confirm button to confirm the transaction
+
+You can go to the Mumbai block explorer https://mumbai.polygonscan.com/ to check your contract balances by entering your contract address in the search bar.
+
+## Using the contract
+
+Click on the Arrow Icon to see your contract methods
+
+Click on the "getRandomNumber" button. You should see a Metamask popup. Click on Confirm to confirm the transaction.
+
+When the transaction is successful, click on the "randomResult" button and you should see a random number that is not zero!
+
+Note: It may take around 1 min for random number to change.
