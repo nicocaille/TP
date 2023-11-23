@@ -1,22 +1,24 @@
-# Introduction
+# Interaction with a ChainLink oracle
+
+## Introduction
 
 This tutorial will introduce you to generating random numbers in Solidity smart contracts using Chainlink VRF (Verifiable Random Function). [Chainlink VRF](https://docs.chain.link/vrf) is used as a verifiable source of randomness on-chain. We will be using the Polygon (Matic) Mumbai testnet and the Remix IDE.
 
-# Why use Chainlink VRF?
+## Why use Chainlink VRF?
 
 Solidity contracts are deterministic, therefore anyone who figures out how your contract produces randomness could predict its results. Chainlink VRF generates a random number off-chain with a cryptographic proof used to verify the result.
 
-# Prerequisites
+## Prerequisites
 
 To follow this tutorial, you should have a basic understanding of Solidity [smart contracts](https://solidity-by-example.org/) & the [Remix IDE](https://remix.ethereum.org/).
 
-# Requirements
+## Requirements
 
 You will need to have the [MetaMask](https://metamask.io/) browser extension installed.
 
-# Using Chainlink VRF
+## Using Chainlink VRF
 
-## Getting testnet tokens
+### Getting testnet tokens
 
 You will need some testnet MATIC and LINK. These can be acquired from the [Polygon Faucet](https://mumbaifaucet.com/) and the [ChainLink Faucet](https://faucets.chain.link/mumbai). MATIC token will be used to pay for contract deployment and making transactions. LINK token will be used to pay the Chainlink oracle for randomness.
 
@@ -29,12 +31,12 @@ To see LINK tokens in your Metamask:
 - Click the Next button
 - Click the Confirm button to add LINK tokens to your list of assets in Metamask
 
-## Using the Remix IDE
+### Using the Remix IDE
 
 We will use the Remix IDE - an online development environment for smart contracts, provided by the Ethereum Foundation.
 Head over to https://remix.ethereum.org. Click on the File Icon to create a new file and name it `RandomNumber.sol`.
 
-## Creating the smart contract
+### Creating the smart contract
 
 In `RandomNumber.sol`, copy the entire smart contract code below and paste it into the Remix editor panel.
 
@@ -118,7 +120,7 @@ function fulfillRandomness(bytes32 requestId, uint256 randomness) internal overr
 }
 ```
 
-## Deploy the contract with Remix
+### Deploy the contract with Remix
 
 In Remix, click on the Solidity Compiler icon on the sidebar:
 
@@ -131,7 +133,7 @@ Now, select `RandomNumberConsumer - RandomNumber.sol` as the contract in the dro
 
 Metamask should popup, allowing you to click the Confirm button to complete the transaction. This should deploy the contract to the Mumbai testnet.
 
-## Fund the contract with LINK
+### Fund the contract with LINK
 
 You will need to fund your contract with LINK tokens to pay the Chainlink oracle for VRF to work. Click on the Copy Icon to copy your contract address.
 
@@ -146,7 +148,7 @@ Go to your Metamask:
 
 You can go to the Mumbai block explorer https://mumbai.polygonscan.com/ to check your contract balances by entering your contract address in the search bar.
 
-## Using the contract
+### Using the contract
 
 Click on the Arrow Icon to see your contract methods
 
