@@ -294,3 +294,235 @@ If everything went as expected, you will be getting the message "Compilation fin
 - The `SPDX-License-Identifier` is not provided
 - There is a mismatch between the Solidity compiler version defined with the `pragma` keyword and the version defined in `hardhat.config.js`.
 - There is a version mismatch between the imported smart contract's Solidity version and the version used to write our smart contract. To solve this, double check the version of the OpenZeppelin contracts you are installing with npm. In my case, the npm package is version `4.3.2` and the smart contracts are written with solidity version `0.8.0`.
+
+## Testing the smart contract
+
+At this point, we have written our smart contract and compiled it. However, a successfully compiled smart contract doesn't mean that it is correct! It is very important to write test cases to ensure that it passes all the intended use cases and some edge cases. Testing smart contracts becomes even more important since once a smart contract is deployed to the blockchain it cannot be modified.
+
+We are going to use the `chai` library for writing our tests. This library should have been already installed while creating our project, if not you can use the command `npm install --save-dev chai`.
+
+We are going to test our smart contract for the following:
+
+- An NFT is minted successfully: After an account calls the mint function, an NFT is minted for that account and its balance increases.
+- The tokenURI is set successfully: For two tokens minted with different tokenURIs, both tokens have their own respective `tokenURI` and the data can be retrieved properly.
+
+### Writing the test cases
+
+In the test folder there will be a script called `sample-test.js`. We will delete this file and create a new file called `artwork-test.js` in the same `test` directory. The filename is unimportant but to keep it organized the test file should be somehow related to the contract being tested. In this new file, add the following code:
+
+```solidity
+const { expect } = require('chai');
+const { ethers } = require("hardhat")
+
+describe("Artwork Smart Contract Tests", function() {
+
+    this.beforeEach(async function() {
+        // This is executed before each test
+    })
+
+    it("NFT is minted successfully", async function() {
+
+    })
+
+    it("tokenURI is set sucessfully", async function() {
+
+    })
+
+})
+```
+
+- `describe`: This keyword is used to give a name to the set of tests we are going to perform.
+- `beforeEach`: The function defined inside of `beforeEach` will be executed before every test case. We will be deploying the NFT contract here because the contract must be deployed before each test is run.
+- `it`: This is used to write each test case. The `it` function takes in a title for the test and a function which runs the test case.
+
+NOTE: Unlike with Truffle, HardHat has no need to run `ganache-cli` separately for tests. Hardhat have it's own local testnet which we can use.
+
+### Deploying contract and writing tests
+
+In order to deploy the smart contract we have to first get a reference to the compiled smart contract using `ethers.getContractFactory()` and then we can use the `deploy()` method to deploy the smart contract and pass in the arguments. We do this in the `beforeEach()` section.
+
+```solidity
+let artwork;
+
+this.beforeEach(async function() {
+    // This is executed before each test
+    // Deploying the smart contract
+    const Artwork = await ethers.getContractFactory("Artwork");
+    artwork = await Artwork.deploy("Artwork Contract", "ART");
+})
+```
+
+To check whether the NFT is minted properly, we first get one of the default accounts created by HardHat. Then we call the mint function present in the smart contract with a random `tokenURI`. We check the balance of the account before and after minting and it should be 0 and 1 respectively. If the contract passes the test, it means that NFTs are minted properly.
+
+```solidity
+it("NFT is minted successfully", async function() {
+    [account1] = await ethers.getSigners();
+
+    expect(await artwork.balanceOf(account1.address)).to.equal(0);
+
+    const tokenURI = "https://opensea-creatures-api.herokuapp.com/api/creature/1"
+    const tx = await artwork.connect(account1).mint(tokenURI);
+
+    expect(await artwork.balanceOf(account1.address)).to.equal(1);
+})
+```
+
+To check whether a `tokenURI` is set properly, we take two random tokenURIs and set them from different accounts. Then we call the `tokenURI()` function to get the `tokenURI` for respective token, then match them with the passed argument to ensure that the tokenURIs are set correctly.
+
+```solidity
+it("tokenURI is set sucessfully", async function() {
+    [account1, account2] = await ethers.getSigners();
+
+    const tokenURI_1 = "https://opensea-creatures-api.herokuapp.com/api/creature/1"
+    const tokenURI_2 = "https://opensea-creatures-api.herokuapp.com/api/creature/2"
+
+    const tx1 = await artwork.connect(account1).mint(tokenURI_1);
+    const tx2 = await artwork.connect(account2).mint(tokenURI_2);
+
+    expect(await artwork.tokenURI(0)).to.equal(tokenURI_1);
+    expect(await artwork.tokenURI(1)).to.equal(tokenURI_2);
+
+})
+```
+
+### Putting it all together
+
+So finally, after putting all the test cases together, the content of `artwork-test.js` file will be:
+
+```solidity
+const { expect } = require('chai');
+const { ethers } = require("hardhat")
+
+describe("Artwork Smart Contract Tests", function() {
+
+    let artwork;
+
+    this.beforeEach(async function() {
+        // This is executed before each test
+        // Deploying the smart contract
+        const Artwork = await ethers.getContractFactory("Artwork");
+        artwork = await Artwork.deploy("Artwork Contract", "ART");
+    })
+
+    it("NFT is minted successfully", async function() {
+        [account1] = await ethers.getSigners();
+
+        expect(await artwork.balanceOf(account1.address)).to.equal(0);
+
+        const tokenURI = "https://opensea-creatures-api.herokuapp.com/api/creature/1"
+        const tx = await artwork.connect(account1).mint(tokenURI);
+
+        expect(await artwork.balanceOf(account1.address)).to.equal(1);
+    })
+
+    it("tokenURI is set sucessfully", async function() {
+        [account1, account2] = await ethers.getSigners();
+
+        const tokenURI_1 = "https://opensea-creatures-api.herokuapp.com/api/creature/1"
+        const tokenURI_2 = "https://opensea-creatures-api.herokuapp.com/api/creature/2"
+
+        const tx1 = await artwork.connect(account1).mint(tokenURI_1);
+        const tx2 = await artwork.connect(account2).mint(tokenURI_2);
+
+        expect(await artwork.tokenURI(0)).to.equal(tokenURI_1);
+        expect(await artwork.tokenURI(1)).to.equal(tokenURI_2);
+
+    })
+
+})
+```
+
+You can run the tests with the command:
+
+```bash
+npx hardhat test
+```
+
+## Deploy the smart contract
+
+At this point we have learned how to write smart contracts and test them. Now its time we finally move towards deploying our smart contract to the Mumbai testnet so we can show off our newly learned skills to our friends.
+
+Before we move ahead and deploy our smart contract, we will need two additional npm packages:
+
+- `dotenv`: Type `npm install dotenv`. This will be used to manage environment variables, which are used for setting up access to our Polygonscan API key.
+- `@nomiclabs/hardhat-etherscan`: Type `npm install @nomiclabs/hardhat-etherscan`. This library is used to verify the smart contract while deploying it to the network. The process of verifying a smart contract on Etherscan and Polygonscan is identical.
+
+### Setting up environment variable
+
+Create a new file named `.env` in the project root directory
+
+Create a new entry in the `.env` file, called `POLYGONSCAN_KEY` and set it to equal the API key created in the beginning of the tutorial. Also add another entry `PRIVATE_KEY` and set it to the private key of the Mumbai testnet account with MATIC in it.
+
+```bash
+POLYGONSCAN_KEY=Paste the API key here
+PRIVATE_KEY=Paste the private key here
+```
+
+### Modifying the config file
+
+In order to deploy a verified smart contract to the Mumbai testnet, we have to make certain changes in the `hardhat.config.js` file. First, copy & paste this entire code into the file and then we will go over it step by step to understand what is happening:
+
+```solidity
+require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan")
+require("dotenv").config();
+
+task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
+  const accounts = await hre.ethers.getSigners();
+
+  for (const account of accounts) {
+    console.log(account.address);
+  }
+});
+
+task("deploy", "Deploy the smart contracts", async(taskArgs, hre) => {
+
+  const Artwork = await hre.ethers.getContractFactory("Artwork");
+  const artwork = await Artwork.deploy("Artwork Contract", "ART");
+
+  await artwork.deployed();
+
+  await hre.run("verify:verify", {
+    address: artwork.address,
+    constructorArguments: [
+      "Artwork Contract",
+      "ART"
+    ]
+  })
+
+})
+
+module.exports = {
+  solidity: "0.8.4",
+  networks: {
+    mumbai: {
+      url: "https://matic-testnet-archive-rpc.bwarelabs.com",
+      accounts: [
+        process.env.PRIVATE_KEY,
+      ]
+    }
+  },
+  etherscan: {
+    apiKey: process.env.POLYGONSCAN_KEY,
+  }
+};
+```
+
+Let's now understand what we are doing here:
+
+- We have imported the `@nomiclabs/hardhat-etherscan` package which is a hardhat plugin that enables us to verify our smart contract after we have deployed it to the network.
+- For verifying the smart contract, we will need the Polygonscan API Key we created towards the start of the tutorial. That API key is passed with the `module.export`. Please note that the object name is "etherscan", and the term "apiKey" is used to refer to the key we created.
+- We also have created a new task for deploying our smart contract. To create the task, we use the task keyword and pass it a name and description. In this task we have written the code for deploying our smart contract. After deploying the contract, we call the verify:verify task, made available to us by the hardhat-etherscan plugin. We passed the contract address along with the parameters passed to the constructor while deploying the contract.
+- Finally since we are going to deploy our contract to Mumbai testnet, we created a new entry in the network section and added the RPC url to Mumbai testnet along with the private key of the account which will be used to deploy the smart contract.
+
+### Deploying the smart contract
+
+We are now ready to deploy our contract to testnet. Run the following command:
+
+```bash
+npx hardhat deploy --network mumbai
+```
+
+Now we have to wait for a few minutes as the contract is deployed and verified.
+
+You can now view your contract at the link provided in the output.
