@@ -526,3 +526,86 @@ npx hardhat deploy --network mumbai
 Now we have to wait for a few minutes as the contract is deployed and verified.
 
 You can now view your contract at the link provided in the output.
+
+### Potential errors while deploying
+
+- Insufficient Funds
+
+If the private key you passed belongs to an account which doesn't have sufficient MATIC tokens to deploy the contract, you will get this error:
+
+```bash
+Error: insufficient funds for intrinsic transaction cost (error={"name":"ProviderError","code":-32000,"_isProviderError":true}, method="sendTransaction", transaction=undefined, code=INSUFFICIENT_FUNDS, version=providers/5.4.5)
+...
+reason: 'insufficient funds for intrinsic transaction cost',
+code: 'INSUFFICIENT_FUNDS',
+error: ProviderError: insufficient funds for gas * price + value
+...
+method: 'sendTransaction',
+transaction: undefined
+```
+
+In this case, please remember to fund your deployment account using the faucet.
+
+- Invalid API Key
+
+If the Polygonscan API Key you entered is missing or is not valid, you are going to get the following error message:
+
+```bash
+Nothing to compile
+Compiling 1 file with 0.8.4
+Error in plugin @nomiclabs/hardhat-etherscan: Invalid API Key
+
+For more info run Hardhat with --show-stack-traces
+```
+
+In this case please make sure you are entering the correct API key.
+
+## Interacting with the smart contract
+
+If we view our smart contract on Polygonscan, you can see that our contract is verified. This is indicated by a green checkmark in the Contracts tab. In the Contracts tab, click on `Write Contract`. Now click on "Connect to Web3" and connect your Metamask account.
+
+### Configure the metadata for your NFT using IPFS
+
+Interplanetary File System (IPFS) is a decentralized protocol and peer-to-peer network for storing and sharing data in a distributed file system.
+
+We will use [Pinata](https://www.pinata.cloud/), a convenient IPFS API and toolkit, to store our NFT asset and metadata to ensure our NFT is truly decentralized.
+
+Once you’ve created an account:
+
+- Navigate to the "Files" page and click the blue "Upload" button at the top-left of the page.
+
+- Upload an image to Pinata — this will be the image asset for your NFT. Feel free to name the asset whatever you wish
+
+- After you upload, you'll see the file info in the table on the "Files" page. You'll also see a CID column. You can copy the CID by clicking the copy button next to it.
+
+In your root directory, make a new file called `nft-metadata.json` and add the following json code:
+
+```json
+{
+  "attributes": [
+    {
+      "trait_type": "Cryptocurrency",
+      "value": "Bitcoin"
+    },
+    {
+      "trait_type": "Supply",
+      "value": "21M"
+    }
+  ],
+  "description": "The world's first cryptocurrency Bitcoin.",
+  "image": "ipfs://QmTiBdh9RmT9w94FMnqZGN1Mdtx85v13A4KGC3F3xve6S5",
+  "name": "Bitcoin"
+}
+```
+
+Feel free to change the data in the json. You can remove or add to the attributes section. Most importantly, make sure image field points to the location of your IPFS image.
+
+Once you’re done editing the JSON file, save it and upload it to Pinata, following the same steps we did for uploading the image.
+
+### Mint your NFT
+
+Now select the `mint` action and put in your `tokenURI` in the form of `ipfs://CID_OF_YOUR_METADATA_JSON`. Once you enter your `tokenURI`, click on the "Write" button. This will show a Metamask popup. Confirm the transaction and wait for it to be confirmed.
+
+## External ressources
+
+- https://ethereum.org/en/developers/tutorials/how-to-write-and-deploy-an-nft/
