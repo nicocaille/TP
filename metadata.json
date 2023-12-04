@@ -1,0 +1,15 @@
+{
+    "attributes": [
+        {
+            "trait_type": "cryptocurrency",
+            "value": "Bitcoin"
+        },
+        {
+            "trait_type": "total supply",
+            "value": "21,000,000"
+        }
+    ],
+    "description": "The world's first Cryptocurrency",
+    "image": "https://aquamarine-regular-kiwi-524.mypinata.cloud/ipfs/QmTiBdh9RmT9w94FMnqZGN1Mdtx85v13A4KGC3F3xve6S5",
+    "name": "Bitcoin"
+}
