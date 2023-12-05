@@ -30,6 +30,6 @@ As an example:
 }
 ```
 
-To mint the NFT, you then put the two parameters, the recipient address of the NFT, and this tokenURI as: https://aquamarine-regular-kiwi-524.mypinata.cloud/ipfs/QmQhHEf6WwmhbETxb4LWEp3jkiTaeFnUS6MySddBqpxtzf
+To mint the NFT, you then put the two parameters, the recipient address of the NFT, and this `tokenURI` as: https://aquamarine-regular-kiwi-524.mypinata.cloud/ipfs/QmQhHEf6WwmhbETxb4LWEp3jkiTaeFnUS6MySddBqpxtzf
 
 We are going to create a generic Minter UI by following the tutorial on this page: https://docs.alchemy.com/docs/nft-minter
