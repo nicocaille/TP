@@ -7,37 +7,93 @@ Install ASDF
 https://asdf-vm.com/
 
 ```bash
-git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.13.1
+git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.15.0
 hash
 rehash
 asdf plugin-add nodejs
 asdf list-all nodejs
-asdf install nodejs 21.2.0
-asdf global nodejs 21.2.0
+asdf install nodejs 22.12.0
+asdf global nodejs 22.12.0
 hash
 rehash
-npm install -g truffle yarn
+npm install -g npm@11.0.0
+npm install -g yarn
 ```
 
 ## Project setup
 
+Go to a project folder where you will store your different projects.
+
 ```bash
-npx create-next-app --typescript payment-dapp
+mkdir payment-dapp
 cd payment-dapp
-truffle init
-yarn add @openzeppelin/contracts @truffle/hdwallet-provider web3 dotenv tailwindcss
+yarn init -2
+yarn config set nodeLinker node-modules
+yarn add hardhat --dev
+yarn add --dev @nomiclabs/hardhat-waffle ethereum-waffle chai @nomiclabs/hardhat-ethers ethers
+yarn add @openzeppelin/contracts
 ```
 
-The command `npx create-next-app` will create a basic Next.js project with typescript support, and `truffle init` will scaffold a Truffle project.
-The code libraries `@openzeppelin/contracts`, `@truffle/hdwallet-provider`, and `web3` will be used to create, deploy and integrate our smart contract. `dotenv` is for dealing with environment variables, and `tailwindcss` is used for UI styling.
+## Project initialization & Hardhat configuration
+
+From the `payment-dapp` folder:
+
+```bash
+yarn hardhat init
+```
+
+You will then need to edit the `hardhat.config.ts` with the following content:
+
+```javascript
+require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-ethers");
+const { mnemonic } = require("./secrets.json");
+
+module.exports = {
+  defaultNetwork: "testnet",
+  networks: {
+    testnet: {
+      url: "https://bsc-testnet-rpc.publicnode.com",
+      chainId: 97,
+      gasPrice: 20000000000,
+      accounts: { mnemonic: mnemonic },
+    },
+  },
+  solidity: {
+    version: "0.8.20",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts",
+  },
+};
+```
+
+At the root of the `payment-dapp` folder, you will need to create a file `secrets.json` that will contain your seed phrase:
+
+```json
+{
+  "mnemonic": "list_of_the_12_or_24_words_from_your_seed_phrase"
+}
+```
+
+and of course, add this `secrets.json` to your `.gitignore` file.
 
 ## Creating a smart contract
 
-Create a new file called `PaymentToken.sol` in the `contracts` directory and add the following code:
+Create a new file called `PaymentToken.sol` in the `contracts` folder and add the following code:
 
 ```solidity
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.6;
+pragma solidity >=0.4.22 <0.9.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract PaymentToken is ERC20 {
@@ -57,69 +113,40 @@ contract PaymentToken is ERC20 {
 
 We create a new ERC20 token using the OpenZeppelin ERC20 contract called **CYTech EUR Payment Token**. This is the token we will use to make payments in our peer-to-peer payment dApp.
 In the constructor of our contract, we are minting and sending **1,000,000 CEUR** tokens to the contract's owner, the account deploying the contract.
-Since `PaymentToken` is an ERC20 token and we are using OpenZeppelin's ERC20 contract, we have a few ready-made functions like `transfer`, `approve`, `allowance`, etc. We will be looking into the `transfer` function in our dApp, and come back to this when we start our frontend.
+Since `PaymentToken` is an ERC20 token and we are using OpenZeppelin's ERC20 contract, we have a few ready-made functions like `transfer`, `approve`, `allowance`, etc.
 
-`truffle-config.js`
-
-```solidity
-const HDWalletProvider = require("@truffle/hdwallet-provider");
-const fs = require("fs");
-const mnemonic = fs.readFileSync(".secret").toString().trim();
-require("dotenv").config();
-
-module.exports = {
-  networks: {
-    development: {
-      host: "localhost",
-      port: 7545,
-      network_id: "*",
-    },
-    matic: {
-      provider: () =>
-        new HDWalletProvider(
-          mnemonic,
-          `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_POLYGON_API}/`
-        ),
-      network_id: 80001,
-      confirmations: 2,
-      timeoutBlocks: 200,
-      skipDryRun: true,
-      chainId: 80001,
-    },
-  },
-  contracts_directory: "./contracts",
-  contracts_build_directory: "./abis",
-  compilers: {
-    solc: {
-      version: "^0.8.6",
-      optimizer: {
-        enabled: true,
-        runs: 200,
-      },
-    },
-  },
-
-  db: {
-    enabled: false,
-  },
-};
-```
-
-Head over to https://github.com/nicocaille/payment-dapp to clone the repository and retrieve the missing files
-
-Create a `.env` file at the root of the project which will contain the API key from Alchemy we created during the previous module:
-
-```bash
-ALCHEMY_POLYGON_API="YOUR_API_KEY"
-```
-
-Create a `.secret` file at the root of the project which will contain the 24 mnemonic words we created during the previous module
+## Deployment of the smart contract
 
 To compile and deploy the smart contract run the following command:
 
 ```bash
-truffle compile
-truffle deploy --network matic
+yarn hardhat compile
 ```
 
-Based on the successful completion of the last command, you will have the smart contract address in the terminal to put in the frontend part of this dapp and also to be added to MetaMask to see your tokens balance.
+Then we need to create the deployment script `scripts/deploy.js` with the following content:
+
+```javascript
+async function main() {
+  const [deployer] = await ethers.getSigners();
+  console.log("Deploying contracts with account:", deployer.address);
+
+  const Contract = await ethers.getContractFactory("PaymentToken");
+  const contract = await Contract.deploy();
+  await contract.deployed();
+
+  console.log("Contract deployed to:", contract.address);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+```
+
+Based on the successful completion of the last command, you will have the smart contract address in the terminal.
+
+You can now head off to the chain explorer to check the deployment transaction and the balance for your wallet address as we minted some at inception.
+
+You will all use this contract address in MetaMask in order to see your balance directly from it.
