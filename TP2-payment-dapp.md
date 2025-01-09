@@ -29,7 +29,7 @@ mkdir payment-dapp
 cd payment-dapp
 yarn init -2
 yarn config set nodeLinker node-modules
-yarn add hardhat --dev
+yarn add --dev hardhat
 yarn add --dev @nomiclabs/hardhat-waffle ethereum-waffle chai @nomiclabs/hardhat-ethers ethers
 yarn add @openzeppelin/contracts
 ```
@@ -41,6 +41,38 @@ From the `payment-dapp` folder:
 ```bash
 yarn hardhat init
 ```
+
+Please select the following options while running this command:
+
+```bash
+888    888                      888 888               888
+888    888                      888 888               888
+888    888                      888 888               888
+8888888888  8888b.  888d888 .d88888 88888b.   8888b.  888888
+888    888     "88b 888P"  d88" 888 888 "88b     "88b 888
+888    888 .d888888 888    888  888 888  888 .d888888 888
+888    888 888  888 888    Y88b 888 888  888 888  888 Y88b.
+888    888 "Y888888 888     "Y88888 888  888 "Y888888  "Y888
+
+👷 Welcome to Hardhat v2.22.17 👷‍
+
+✔ What do you want to do? · Create a TypeScript project
+✔ Hardhat project root: · /Users/ngc/payment-dapp
+✔ Do you want to add a .gitignore? (Y/n) · y
+
+You need to install these dependencies to run the sample project:
+  yarn add --dev "hardhat@^2.14.0" "@nomicfoundation/hardhat-network-helpers@^1.0.0" "@nomicfoundation/hardhat-verify@^2.0.0" "chai@^4.2.0" "hardhat-gas-reporter@^1.0.8" "solidity-coverage@^0.8.0" "@nomicfoundation/hardhat-ignition@^0.15.0" "@types/chai@^4.2.0" "@types/mocha@>=9.1.0" "@types/node@>=18.0.0" "ts-node@>=8.0.0" "typescript@>=4.5.0" "@nomicfoundation/hardhat-toolbox@^5.0.0" "@nomicfoundation/hardhat-chai-matchers@^2.0.0" "@nomicfoundation/hardhat-ethers@^3.0.0" "ethers@^6.4.0" "@typechain/hardhat@^9.0.0" "typechain@^8.3.0" "@typechain/ethers-v6@^0.5.0" "@nomicfoundation/hardhat-ignition-ethers@^0.15.0"
+
+✨ Project created ✨
+
+See the README.md file for some example tasks you can run
+
+Give Hardhat a star on Github if you're enjoying it! ⭐️✨
+
+     https://github.com/NomicFoundation/hardhat
+```
+
+and install the dependencies as per the instructions above.
 
 You will then need to edit the `hardhat.config.ts` with the following content:
 
@@ -120,7 +152,15 @@ Since `PaymentToken` is an ERC20 token and we are using OpenZeppelin's ERC20 con
 To compile and deploy the smart contract run the following command:
 
 ```bash
+yarn add --dev hardhat@latest @nomiclabs/hardhat-ethers@^2.0.0 ethers@^5.0.0
 yarn hardhat compile
+```
+
+You should end up with the following completion message:
+
+```bash
+Downloading compiler 0.8.20
+Compiled 6 Solidity files successfully (evm target: paris).
 ```
 
 Then we need to create the deployment script `scripts/deploy.js` with the following content:
@@ -145,7 +185,18 @@ main()
   });
 ```
 
+and run the following command:
+
+```bash
+yarn hardhat run scripts/deploy.js --network testnet
+```
+
 Based on the successful completion of the last command, you will have the smart contract address in the terminal.
+
+```bash
+Deploying contracts with account: 0xf29B39E720cA9E8B803a793041C6712A63639159
+Contract deployed to: 0xdFEc08Dd11f43dB87e61B7A510402Bb0937f052E
+```
 
 You can now head off to the chain explorer to check the deployment transaction and the balance for your wallet address as we minted some at inception.
 
